@@ -1,0 +1,174 @@
+ {
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "AWS CloudFormation Template for VPC_2Subnets_WEB_DB_NAT_IGW_Webinst_Dbinst.",
+
+
+  "Resources" : { 
+     "VPC" : {
+         "Type" : "AWS::EC2::VPC",
+         "Properties" : {
+             "CidrBlock" : "70.0.0.0/16"
+	
+            }
+        },
+     "WebSubnet" : {
+         "Type" : "AWS::EC2::Subnet",
+         "Properties" : {
+             "VpcId" : { "Ref" : "VPC" },
+             "CidrBlock" : "70.0.1.0/24",
+	         "Tags" : [{"Key" : "Name","Value" : "Websub1"}]
+	        }
+        },
+    
+	  "DbSubnet" : {
+         "Type" : "AWS::EC2::Subnet",
+         "Properties" : {
+             "VpcId" : { "Ref" : "VPC" },
+             "CidrBlock" : "70.0.2.0/24",
+	         "Tags" : [{"Key" : "Name","Value" : "Dbsub1"}]
+	        }
+        },
+
+     "InternetGateway" : {
+          "Type" : "AWS::EC2::InternetGateway",
+         "Properties" : {
+             "Tags" : [{"Key" : "Name","Value" : "igw1"}]
+            }
+        },
+
+     "AttachGateway" : {
+         "Type" : "AWS::EC2::VPCGatewayAttachment",
+         "Properties" : {
+             "VpcId" : { "Ref" : "VPC" },
+             "InternetGatewayId" : { "Ref" : "InternetGateway" }
+            }
+        },
+
+     "MainRouteTable" : {
+         "Type" : "AWS::EC2::RouteTable",
+         "Properties" : {
+             "VpcId" : {"Ref" : "VPC"},
+             "Tags" : [{"Key" : "Name","Value" : "mainroute1"}]
+            }
+        },
+
+     "MainRoute" : {
+         "Type" : "AWS::EC2::Route",
+         "DependsOn" : "AttachGateway",
+         "Properties" : {
+             "RouteTableId" : { "Ref" : "MainRouteTable" },
+             "DestinationCidrBlock" : "0.0.0.0/0",
+             "GatewayId" : { "Ref" : "InternetGateway" }
+            }
+        },
+             "MainSubnetRouteTableAssociation" : {
+             "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+             "Properties" : {
+                 "SubnetId" : { "Ref" : "WebSubnet" },
+                 "RouteTableId" : { "Ref" : "MainRouteTable" }
+                }
+            },
+
+ 
+     "SubRouteTable" : {
+         "Type" : "AWS::EC2::RouteTable",
+         "Properties" : {
+             "VpcId" : {"Ref" : "VPC"},
+             "Tags" : [{"Key" : "Name","Value" : "Subroute1"}]
+            }
+        },
+		
+         "SubRoute" : {
+             "Type" : "AWS::EC2::Route",
+             "DependsOn" : "AttachGateway",
+             "Properties" : {
+                 "RouteTableId" : { "Ref" : "SubRouteTable" },
+                 "DestinationCidrBlock" : "0.0.0.0/0",
+                 "InstanceId" : { "Ref" : "NatInstance" }
+                }
+            },
+
+
+             "SubSubnetRouteTableAssociation" : {
+             "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+             "Properties" : {
+                 "SubnetId" : { "Ref" : "DbSubnet" },
+                 "RouteTableId" : { "Ref" : "SubRouteTable" }
+                }
+        },
+     "WebInstance" : {
+         "Type" : "AWS::EC2::Instance",
+         "Properties" : {
+         "InstanceType" : "t2.micro",
+         "KeyName" : "srirama",
+         "ImageId" : "ami-5ec1673e",
+	     "NetworkInterfaces" : [{
+             "GroupSet" : [{ "Ref" : "WebInstanceSecurityGroup" }],
+             "AssociatePublicIpAddress" : "true",
+             "DeviceIndex" : "0",
+             "DeleteOnTermination" : "true",
+             "SubnetId" : { "Ref" : "WebSubnet" }
+            }],
+	         "Tags" : [{"Key" : "Name","Value" : "Webinst1"}]
+            }
+        },
+         "WebInstanceSecurityGroup" : {
+             "Type" : "AWS::EC2::SecurityGroup",
+             "Properties" : {
+                 "VpcId" : { "Ref" : "VPC" },
+                 "GroupDescription" : "Enable SSH access via port 22",
+				 "SecurityGroupIngress" : [
+                     {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0"},
+                     {"IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"}
+                    ],
+	                 "Tags" : [{"Key" : "Name","Value" : "websg1"}]
+                }
+            },
+         "DbInstance" : {
+             "Type" : "AWS::EC2::Instance",
+             "Properties" : {
+                 "InstanceType" : "t2.micro",
+                 "KeyName" : "srirama",
+                 "ImageId" : "ami-5ec1673e",
+	             "NetworkInterfaces" : [{
+                     "GroupSet" : [{ "Ref" : "DbInstanceSecurityGroup" }],
+                     "AssociatePublicIpAddress" : "false",
+                     "DeviceIndex" : "0",
+                     "DeleteOnTermination" : "true",
+                     "SubnetId" : { "Ref" : "DbSubnet" }
+                    }],
+	                 "Tags" : [{"Key" : "Name","Value" : "Dbinst1"}]
+                }
+            },    
+	             "DbInstanceSecurityGroup" : {
+                     "Type" : "AWS::EC2::SecurityGroup",
+                         "Properties" : {
+                             "VpcId" : { "Ref" : "VPC" },
+                             "GroupDescription" : "Enable SSH access via port 22",
+                             "SecurityGroupIngress" : [
+                                 {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0"}
+                                ],
+	                             "Tags" : [{"Key" : "Name","Value" : "dbsg1"}]
+                            }
+                    },
+    
+         "NatInstance" : {
+             "Type" : "AWS::EC2::Instance",
+             "Properties" : {
+                 "InstanceType" : "t2.micro",
+                 "KeyName" : "srirama",
+                 "ImageId" : "ami-11fd2e71",
+	             "NetworkInterfaces" : [{
+                     "GroupSet" : [{ "Ref" : "WebInstanceSecurityGroup" }],
+                     "AssociatePublicIpAddress" : "true",
+                     "DeviceIndex"              : "0",
+                     "DeleteOnTermination"      : "true",
+                     "SubnetId"                 : { "Ref" : "WebSubnet" }
+                    }],
+	                 "Tags" : [{"Key" : "Name","Value" : "Natinst1"}]
+                }
+            }
+        }
+ }
+
