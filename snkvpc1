@@ -158,7 +158,7 @@
              "Properties" : {
                  "InstanceType" : "t2.micro",
                  "KeyName" : "srirama",
-                 "ImageId" : "ami-11fd2e71",
+                 "ImageId" : "ami-4836a428",
 	             "NetworkInterfaces" : [{
                      "GroupSet" : [{ "Ref" : "WebInstanceSecurityGroup" }],
                      "AssociatePublicIpAddress" : "true",
