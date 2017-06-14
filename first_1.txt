@@ -1,15 +1,5 @@
 Notepad++ v7.4.1 bug-fixes:
 
-
-
-
-Notepad++ 7.4 new featurs/enhancements & bug-fixes:
-
-1.  Add document peek feature (while mouse hovering on tab).
-2.  Add peek on document map feature.
-3.  Fix issue with clicking links in html/js/asp/php.
-4.  Fix folding vertical line loses colour after changing folding style via Preference dialog.
-5.  Enhance folding feature (multi-line quotes) for python.
 6.  Improve certificate verifying method.
 7.  Fix issue of losing syntax highlighting while changing file extension (by "save as").
 8.  Enhance the UI of "Windows" dialog (Menu "Window->Windows...") for sorting.
