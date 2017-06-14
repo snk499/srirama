@@ -28,7 +28,8 @@ Notepad++ 7.4 new featurs/enhancements & bug-fixes:
 19. Fix change.log always opened issue.
 
 ksjasjzxjgzxjb
-
+dsfnkdsskcjvlckm
+sknvl
 Included plugins:
 
 1.  NppExport v0.2.8 (32-bit x86 only)
